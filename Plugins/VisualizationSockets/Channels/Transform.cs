@@ -34,8 +34,11 @@ public class TransformChannel : IWebsocketChannel
     {
         while (_socket != null && _socket.State == WebSocketState.Open)
         {
+            int start = Environment.TickCount;
             SendData(_socket);
-            System.Threading.Thread.Sleep(50); // 20 FPS
+            int end = Environment.TickCount;
+            int elapsed = end - start;
+            System.Threading.Thread.Sleep(Math.Max(50 - elapsed, 0)); // 20 FPS
         }
     }
 

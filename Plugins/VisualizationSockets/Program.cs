@@ -97,7 +97,8 @@ namespace VisualizationSockets
             return channel switch
             {
                 1 => new Channels.TransformChannel(),
-                3 => new Channels.TruckStateChannel(),
+                3 => new Channels.TelemetryChannel(),
+                4 => new Channels.TrafficChannel(),
                 _ => null
             };
         }
@@ -148,6 +149,10 @@ namespace VisualizationSockets
                             channelObj.Init(this, socket);
                             channels.Add(channelObj);
                             Logger.Info($"Client subscribed to channel {channel} ({channelObj.Name})");
+                        }
+                        else
+                        {
+                            Logger.Warn($"Client tried to subscribe to unknown channel {channel}");
                         }
                         continue;
                     }

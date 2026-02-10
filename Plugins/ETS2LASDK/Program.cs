@@ -93,7 +93,7 @@ namespace ETS2LASDK
         public override float TickRate => 20.0f;
         string mmapName = "Local\\ETS2LATraffic";
         MemoryReader? _reader;
-        int mmapSize = 5360;
+        int mmapSize = 6960;
 
         public override void Tick()
         {
@@ -139,12 +139,15 @@ namespace ETS2LASDK
             for (int i = 0; i < 40; i++)
             {
                 TrafficVehicle vehicle = new TrafficVehicle();
+
+                // 0
                 vehicle.position = new Vector3(
                     _reader.ReadFloat(offset),
                     _reader.ReadFloat(offset + 4),
                     _reader.ReadFloat(offset + 8)
                 ); offset += 12;
 
+                // 12
                 vehicle.rotation = new ETS2LA.Shared.Quaternion(
                     _reader.ReadFloat(offset),
                     _reader.ReadFloat(offset + 4),
@@ -152,23 +155,31 @@ namespace ETS2LASDK
                     _reader.ReadFloat(offset + 12)
                 ); offset += 16;
 
+                // 28
                 vehicle.size = new Vector3(
                     _reader.ReadFloat(offset),     // Width
                     _reader.ReadFloat(offset + 4), // Height
                     _reader.ReadFloat(offset + 8)  // Length
                 ); offset += 12;
 
+                // 40
                 vehicle.speed = _reader.ReadFloat(offset); offset += 4;
                 vehicle.acceleration = _reader.ReadFloat(offset); offset += 4;
                 vehicle.trailer_count = _reader.ReadInt16(offset); offset += 2;
                 vehicle.id = _reader.ReadInt16(offset); offset += 2;
 
+                // 52
                 vehicle.isTMP = _reader.ReadBool(offset); offset += 1;
                 vehicle.isTrailer = _reader.ReadBool(offset); offset += 1;
 
-                TrafficTrailer[] trailers = new TrafficTrailer[vehicle.trailer_count];
-                for (int j = 0; j < vehicle.trailer_count; j++)
+                // 54
+                if(vehicle.trailer_count > 2) { vehicle.trailer_count = 2; }
+                if(vehicle.trailer_count < 0) { vehicle.trailer_count = 0; }
+
+                TrafficTrailer[] trailers = new TrafficTrailer[3];
+                for (int j = 0; j < 3; j++)
                 {
+                    // 0
                     TrafficTrailer trailer = new TrafficTrailer();
                     trailer.position = new Vector3(
                         _reader.ReadFloat(offset),
@@ -176,6 +187,7 @@ namespace ETS2LASDK
                         _reader.ReadFloat(offset + 8)
                     ); offset += 12;
 
+                    // 12
                     trailer.rotation = new ETS2LA.Shared.Quaternion(
                         _reader.ReadFloat(offset),
                         _reader.ReadFloat(offset + 4),
@@ -183,22 +195,20 @@ namespace ETS2LASDK
                         _reader.ReadFloat(offset + 12)
                     ); offset += 16;
 
+                    // 28
                     trailer.size = new Vector3(
                         _reader.ReadFloat(offset),     // Width
                         _reader.ReadFloat(offset + 4), // Height
                         _reader.ReadFloat(offset + 8)  // Length
                     ); offset += 12;
-                    trailers[j] = trailer;
-                }
 
-                // Correct offset if no trailers (or under 2)
-                if (vehicle.trailer_count < 2)
-                {
-                    offset += 40 * (2 - vehicle.trailer_count);
+                    // 40
+                    trailers[j] = trailer;
                 }
 
                 vehicle.trailers = trailers;
                 vehicles[i] = vehicle;
+                // offset should now be at 54 + 3 * 40 = 54 + 120 = 174 -> 6960 for 40 vehicles
             }
             data.vehicles = vehicles;
             Events.Current.Publish<TrafficData>("ETS2LASDK.Traffic", data);

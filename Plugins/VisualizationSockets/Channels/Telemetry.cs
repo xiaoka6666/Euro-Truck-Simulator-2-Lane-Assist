@@ -6,12 +6,12 @@ using ETS2LA.Backend.Events;
 
 namespace VisualizationSockets.Channels;
 
-public class TruckStateChannel : IWebsocketChannel
+public class TelemetryChannel : IWebsocketChannel
 {
     private Plugin? _plugin;
     private WebSocket? _socket;
-    public string Name => "Truck State";
-    public string Description => "Sends the current state (throttle, steering, blinkers...) of the truck.";
+    public string Name => "Telemetry";
+    public string Description => "Sends telemetry (throttle, steering, blinkers...).";
     public int Channel => 3;
     public WebSocketChannelType ChannelType => WebSocketChannelType.Continuous;
 
@@ -34,8 +34,11 @@ public class TruckStateChannel : IWebsocketChannel
     {
         while (_socket != null && _socket.State == WebSocketState.Open)
         {
+            int start = Environment.TickCount;
             SendData(_socket);
-            System.Threading.Thread.Sleep(50); // 20 FPS
+            int end = Environment.TickCount;
+            int elapsed = end - start;
+            System.Threading.Thread.Sleep(Math.Max(50 - elapsed, 0)); // 20 FPS
         }
     }
 
@@ -80,12 +83,16 @@ public class TruckStateChannel : IWebsocketChannel
         }
         finally
         {
-            WebsocketLock.Current.Semaphore.Release();
+            try
+            {
+                WebsocketLock.Current.Semaphore.Release();
+            } catch {}
         }
     }
 
     public void Shutdown()
     {
+        _socket = null;
         Events.Current.Unsubscribe<GameTelemetryData>("GameTelemetry.Data", OnTelemetryUpdate);
     }
 }

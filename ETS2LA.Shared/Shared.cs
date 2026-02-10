@@ -286,6 +286,7 @@ namespace ETS2LA.Shared
         public float Y;
         public float Z;
         public float W;
+        private Vector3? _euler = null;
 
         public Quaternion(float x, float y, float z, float w)
         {
@@ -307,8 +308,30 @@ namespace ETS2LA.Shared
             return new float[] { X, Y, Z, W };
         }
 
+        public float Yaw()
+        {
+            return ToEuler().X;
+        }
+
+        public float Pitch()
+        {
+            return ToEuler().Y;
+        }
+
+        public float Roll()
+        {
+            return ToEuler().Z;
+        }
+
+        /// <summary>
+        ///  Convert this quaternion to Euler angles in degrees. The returned Vector3 contains (yaw, pitch, roll) in that order.
+        /// </summary>
+        /// <returns>A Vector3 representing the Euler angles (yaw, pitch, roll).</returns>
         public Vector3 ToEuler()
         {
+            if (_euler != null)
+                return _euler.Value;
+            
             float yaw = (float)Math.Atan2(2.0 * (Y * Z + W * X), W * W - X * X - Y * Y + Z * Z);
             float pitch = (float)Math.Asin(-2.0 * (X * Z - W * Y));
             float roll = (float)Math.Atan2(2.0 * (X * Y + W * Z), W * W + X * X - Y * Y - Z * Z);
@@ -317,7 +340,8 @@ namespace ETS2LA.Shared
             pitch = pitch * (180.0f / (float)Math.PI);
             roll = roll * (180.0f / (float)Math.PI);
 
-            return new Vector3(pitch, roll, yaw);
+            _euler = new Vector3(yaw, pitch, roll);
+            return _euler.Value;
         }
     }
 
