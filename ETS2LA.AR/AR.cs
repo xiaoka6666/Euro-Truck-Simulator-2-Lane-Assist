@@ -34,6 +34,12 @@ public class ARHandler
     private bool _isInteracting = false;
     
     private Dictionary<WindowDefinition, Delegate> WindowRenderers = new();
+    private List<Tuple<string, string>> _consoleMessages = new();
+
+    public bool IsOverlayFocused => _isInteracting;
+    public bool ShowDemoWindow { get; set; } = false;
+    public bool ShowConsole { get; set; } = true;
+    public bool ShowARInfo { get; set; } = true;
 
     private string glslVersion = "#version 150";
     private GLFWwindowPtr _window;
@@ -46,6 +52,11 @@ public class ARHandler
     {
         ControlHandler.Current.RegisterControl(Interact);
         ControlHandler.Current.On(Interact.Id, HandleInput);
+        Logger.OnLog += (log) => {
+            _consoleMessages.Add(log);
+            if (_consoleMessages.Count > 100) { _consoleMessages.RemoveAt(0); }
+        };
+
         Task.Run(() => RenderLoop());
     }
 
@@ -131,10 +142,26 @@ public class ARHandler
 
     private void OnUIRender()
     {
-        ImGui.ShowDemoWindow();
-        ImGui.Begin("Welcome!");
-        RenderARInfo();
-        ImGui.End();
+        if (ShowDemoWindow)
+            ImGui.ShowDemoWindow();
+
+        if (ShowARInfo)
+        {
+            ImGui.Begin("Welcome!");
+            RenderARInfo();
+            RenderWindowContextMenu(() => ShowARInfo = false);
+            ImGui.End();
+        }
+
+        if (ShowConsole)
+        {
+            ImGui.SetNextWindowBgAlpha(0.5f);
+            ImGui.Begin("Console", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize);
+            RenderConsole();
+            RenderWindowContextMenu(() => ShowConsole = false);
+            ImGui.End();
+        }
+
 
         foreach (var kvp in WindowRenderers)
         {
@@ -144,6 +171,26 @@ public class ARHandler
             ImGui.Begin(def.Title);
             renderAction.DynamicInvoke();
             ImGui.End();
+        }
+    }
+
+    private void RenderConsole()
+    {
+        for(int i = 10; i > 0; i--)
+        {
+            var color = new Vector4(1f, 1f, 1f, 1f);
+            string level, message;
+            level = _consoleMessages.ElementAtOrDefault(_consoleMessages.Count - i)?.Item1 ?? "";
+            message = _consoleMessages.ElementAtOrDefault(_consoleMessages.Count - i)?.Item2 ?? "";
+            if (string.IsNullOrEmpty(level) || string.IsNullOrEmpty(message)) { continue; }
+
+            if (level == "ERR") { color = new Vector4(1f, 0.5f, 0.5f, 1f); }
+            else if (level == "WRN") { color = new Vector4(1f, 1f, 0.5f, 1f); }
+            else if (level == "INF") { color = new Vector4(0.5f, 0.5f, 1f, 1f); }
+            else if (level == "OKK") { color = new Vector4(0.5f, 1f, 0.5f, 1f); }
+            ImGui.TextColored(color, $"[{level}]");
+            ImGui.SameLine();
+            ImGui.Text(message);
         }
     }
 
@@ -165,6 +212,18 @@ public class ARHandler
         ImGui.SameLine();
         ImGui.Text("(can be changed in the settings!)");
         ImGui.Text("The overlay is pretty much a full window system, there shouldn't be any crashes... hopefully... but if there are, report them!");
+    }
+
+    private unsafe void RenderWindowContextMenu(Action onClose)
+    {
+        if (ImGui.BeginPopupContextWindow((byte*)0, ImGuiPopupFlags.MouseButtonRight))
+        {
+            if (ImGui.MenuItem("Close"))
+            {
+                onClose?.Invoke();
+            }
+            ImGui.EndPopup();
+        }
     }
 
     private bool InitImGui()
