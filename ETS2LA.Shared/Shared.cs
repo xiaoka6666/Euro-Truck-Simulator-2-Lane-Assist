@@ -378,6 +378,9 @@ namespace ETS2LA.Shared
     {
         public Vector3 position = Vector3.Zero;
         public Quaternion rotation = Quaternion.Identity;
+        /// <summary>
+        ///  Size, X = Width, Y = Height, Z = Length. Note that the length is not always accurate, especially for trailers.
+        /// </summary>
         public Vector3 size = Vector3.Zero;
         public float speed;
         public float acceleration;

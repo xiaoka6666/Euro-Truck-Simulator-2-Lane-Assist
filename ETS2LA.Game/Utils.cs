@@ -4,6 +4,7 @@ using TruckLib.ScsMap;
 using TruckLib;
 using ETS2LA.Logging;
 
+using ETS2LA.Game.SiiFiles;
 namespace ETS2LA.Game.Utils;
 
 public static class RoadUtils
@@ -14,12 +15,35 @@ public static class RoadUtils
     /// </summary>
     /// <param name="road">The road to calculate lane centers for.</param>
     /// <returns>A tuple containing two float arrays: the left lane centers and the right lane centers.</returns>
-    public static (float[] Left, float[] Right) CalculateRoadLaneCenters(Road road, IFileSystem fs)
+    public static (float[] Left, float[] Right) CalculateRoadLaneCenters(Road road)
     {
-        // Load in the road template
-        Logger.Info($"Calculating lane centers for road type: {road.RoadType}");
-        var sii = SiiFile.Open(@"/def/world/road_look.template.sii", fs);
-        var roadTmpl = sii.Units.First(u => u.Name == road.RoadType);
+        var sii = SiiFileHandler.Current.GetSiiFile(@"/def/world/road_look.template.sii");
+        if (sii == null) return ([], []);
+
+        Unit? roadTmpl = null;
+
+        // Usually templates seem to have the "road." prefix
+        try
+        {
+            roadTmpl = sii.Units.First(u => u.Name == $"road.{road.RoadType}");
+        } catch (InvalidOperationException)
+        {
+            Logger.Error($"Road template for {road.RoadType} not found in SII file.");
+            return ([], []);
+        }
+
+        // however some don't, so for those we try again without the prefix
+        try
+        {
+            if (roadTmpl == null)
+            {
+                roadTmpl = sii.Units.First(u => u.Name == $"{road.RoadType}");
+            }
+        } catch (InvalidOperationException)
+        {
+            Logger.Error($"Road template for {road.RoadType} not found in SII file.");
+            return ([], []);
+        }
 
         const float laneWidth = 4.5f;
         const float halfLaneWidth = 2.25f;

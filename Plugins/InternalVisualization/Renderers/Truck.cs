@@ -5,13 +5,14 @@ using ETS2LA.Logging;
 using TruckLib.ScsMap;
 using Hexa.NET.ImGui;
 using System.Numerics;
+using TruckLib;
 
 namespace InternalVisualization.Renderers;
 
 public class TruckRenderer : Renderer
 {
     public override void Render(ImDrawListPtr drawList, Vector2 windowPos, Vector2 windowSize, 
-                                GameTelemetryData telemetryData, MapData mapData, Road[] roads, Prefab[] prefabs)
+                                GameTelemetryData telemetryData, MapData mapData, Road[] roads, Prefab[] prefabs, IReadOnlyList<Node> nearbyNodes)
     {
         Vector3Double center = telemetryData.truckPlacement.coordinate;
         Vector2 screenPos = Utils.WorldToScreen(center.ToVector3(), center.ToVector3(), windowSize) + windowPos;
@@ -22,12 +23,14 @@ public class TruckRenderer : Renderer
         angle = 360f - angle + 90;
 
         // Create a 3x8 rectangle representing the truck, centered on the screen position.
+        float width = 8 * InternalVisualizationConstants.Scale;
+        float length = 3 * InternalVisualizationConstants.Scale;
         Vector2[] truckCorners = new Vector2[]
         {
-            new Vector2(-4, -1.5f),
-            new Vector2(4, -1.5f),
-            new Vector2(4, 1.5f),
-            new Vector2(-4, 1.5f)
+            new Vector2(-width / 2, -length / 2),
+            new Vector2(width / 2, -length / 2),
+            new Vector2(width / 2, length / 2),
+            new Vector2(-width / 2, length / 2)
         };
 
         // Rotate the truck corners around the center point.
@@ -42,7 +45,7 @@ public class TruckRenderer : Renderer
         {
             Vector2 start = truckCorners[i];
             Vector2 end = truckCorners[(i + 1) % truckCorners.Length];
-            drawList.AddLine(start, end, ImGui.GetColorU32(new Vector4(0, 1, 0.2f, 1)), 2);
+            drawList.AddLine(start, end, ImGui.GetColorU32(new Vector4(0, 1, 0.2f, 1)), 2 * InternalVisualizationConstants.Scale);
         }
     }
 }

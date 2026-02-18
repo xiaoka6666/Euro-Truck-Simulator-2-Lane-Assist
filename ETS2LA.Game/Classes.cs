@@ -8,6 +8,7 @@ using TruckLib;
 // Copied from https://github.com/sk-zk/Extractor
 using Extractor;
 using Extractor.Zip;
+using TruckLib.Sii;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace ETS2LA.Game;
@@ -244,6 +245,11 @@ public class Installation
 
             return "/map/usa.mbd";
         }
+    }
+
+    public IFileSystem? GetFileSystem()
+    {
+        return _assetLoader;
     }
 
     public MapData? GetMapData()

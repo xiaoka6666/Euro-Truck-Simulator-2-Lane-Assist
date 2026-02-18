@@ -9,6 +9,8 @@ using InternalVisualization.Renderers;
 using TruckLib.ScsMap;
 using Hexa.NET.ImGui;
 using System.Numerics;
+using TruckLib;
+using ETS2LA.Game.SiiFiles;
 
 namespace InternalVisualization
 {
@@ -25,21 +27,25 @@ namespace InternalVisualization
         {
             Title = "Internal Visualization",
             Width = 800,
-            Height = 600,
+            Height = 800,
         };
 
         public override float TickRate => 1f;
+        private int ViewDistance = 300;
 
         private Renderer[] renderers = new Renderer[]
         {
+            new NodesRenderer(),
+            new RoadsRenderer(),
+            new TrafficRenderer(),
             new TruckRenderer(),
-            new NodesRenderer()
         };
 
         private GameTelemetryData? _telemetryData;
         private MapData? _mapData;
         private Road[]? _roads;
         private Prefab[]? _prefabs;
+        private IReadOnlyList<Node>? _nearbyNodes;
 
         public override void Init()
         {
@@ -79,13 +85,24 @@ namespace InternalVisualization
 
             if (!found) return;
             _mapData = GameHandler.Current.Installations[installation].GetMapData();
+            var fs = GameHandler.Current.Installations[installation].GetFileSystem();
+            if(fs != null) SiiFileHandler.Current.SetFileSystem(fs);
+
             _roads = _mapData.MapItems.Where(item => item is Road).Cast<Road>().ToArray();
             _prefabs = _mapData.MapItems.Where(item => item is Prefab).Cast<Prefab>().ToArray();
+
+            if (_telemetryData == null) return;
+            Vector3Double center = _telemetryData.truckPlacement.coordinate;
+            double minX = center.X - ViewDistance;
+            double maxX = center.X + ViewDistance;
+            double minZ = center.Z - ViewDistance;
+            double maxZ = center.Z + ViewDistance;
+            _nearbyNodes = _mapData.Nodes.Within(minX, minZ, maxX, maxZ);
         }
 
         private void RenderWindow()
         {
-            if(_mapData == null)
+            if(_mapData == null || _telemetryData == null || _roads == null || _prefabs == null || _nearbyNodes == null)
             {
                 ImGui.Text("Waiting for map data...");
                 return;
@@ -97,7 +114,7 @@ namespace InternalVisualization
 
             foreach (var renderer in renderers)
             {
-                renderer.Render(drawList, windowPos, windowSize, _telemetryData!, _mapData!, _roads!, _prefabs!);
+                renderer.Render(drawList, windowPos, windowSize, _telemetryData!, _mapData!, _roads!, _prefabs!, _nearbyNodes!);
             }
         }
         
