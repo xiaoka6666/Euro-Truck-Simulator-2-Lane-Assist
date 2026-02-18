@@ -138,67 +138,76 @@ namespace ETS2LASDK
             int offset = 0;
             for (int i = 0; i < 40; i++)
             {
-                TrafficVehicle vehicle = new TrafficVehicle();
-                vehicle.position = new Vector3(
-                    _reader.ReadFloat(offset),
-                    _reader.ReadFloat(offset + 4),
-                    _reader.ReadFloat(offset + 8)
-                ); offset += 12;
-
-                vehicle.rotation = new ETS2LA.Shared.Quaternion(
-                    _reader.ReadFloat(offset),
-                    _reader.ReadFloat(offset + 4),
-                    _reader.ReadFloat(offset + 8),
-                    _reader.ReadFloat(offset + 12)
-                ); offset += 16;
-
-                vehicle.size = new Vector3(
-                    _reader.ReadFloat(offset),     // Width
-                    _reader.ReadFloat(offset + 4), // Height
-                    _reader.ReadFloat(offset + 8)  // Length
-                ); offset += 12;
-
-                vehicle.speed = _reader.ReadFloat(offset); offset += 4;
-                vehicle.acceleration = _reader.ReadFloat(offset); offset += 4;
-                vehicle.trailer_count = _reader.ReadInt16(offset); offset += 2;
-                vehicle.id = _reader.ReadInt16(offset); offset += 2;
-
-                vehicle.isTMP = _reader.ReadBool(offset); offset += 1;
-                vehicle.isTrailer = _reader.ReadBool(offset); offset += 1;
-
-                TrafficTrailer[] trailers = new TrafficTrailer[vehicle.trailer_count];
-                for (int j = 0; j < vehicle.trailer_count; j++)
+                try
                 {
-                    TrafficTrailer trailer = new TrafficTrailer();
-                    trailer.position = new Vector3(
+                    
+                    TrafficVehicle vehicle = new TrafficVehicle();
+                    vehicle.position = new Vector3(
                         _reader.ReadFloat(offset),
                         _reader.ReadFloat(offset + 4),
                         _reader.ReadFloat(offset + 8)
                     ); offset += 12;
 
-                    trailer.rotation = new ETS2LA.Shared.Quaternion(
+                    vehicle.rotation = new ETS2LA.Shared.Quaternion(
                         _reader.ReadFloat(offset),
                         _reader.ReadFloat(offset + 4),
                         _reader.ReadFloat(offset + 8),
                         _reader.ReadFloat(offset + 12)
                     ); offset += 16;
 
-                    trailer.size = new Vector3(
+                    vehicle.size = new Vector3(
                         _reader.ReadFloat(offset),     // Width
                         _reader.ReadFloat(offset + 4), // Height
                         _reader.ReadFloat(offset + 8)  // Length
                     ); offset += 12;
-                    trailers[j] = trailer;
-                }
 
-                // Correct offset if no trailers (or under 2)
-                if (vehicle.trailer_count < 2)
+                    vehicle.speed = _reader.ReadFloat(offset); offset += 4;
+                    vehicle.acceleration = _reader.ReadFloat(offset); offset += 4;
+                    vehicle.trailer_count = _reader.ReadInt16(offset); offset += 2;
+                    vehicle.id = _reader.ReadInt16(offset); offset += 2;
+
+                    vehicle.isTMP = _reader.ReadBool(offset); offset += 1;
+                    vehicle.isTrailer = _reader.ReadBool(offset); offset += 1;
+
+                    TrafficTrailer[] trailers = new TrafficTrailer[vehicle.trailer_count];
+                    for (int j = 0; j < vehicle.trailer_count; j++)
+                    {
+                        TrafficTrailer trailer = new TrafficTrailer();
+                        trailer.position = new Vector3(
+                            _reader.ReadFloat(offset),
+                            _reader.ReadFloat(offset + 4),
+                            _reader.ReadFloat(offset + 8)
+                        ); offset += 12;
+
+                        trailer.rotation = new ETS2LA.Shared.Quaternion(
+                            _reader.ReadFloat(offset),
+                            _reader.ReadFloat(offset + 4),
+                            _reader.ReadFloat(offset + 8),
+                            _reader.ReadFloat(offset + 12)
+                        ); offset += 16;
+
+                        trailer.size = new Vector3(
+                            _reader.ReadFloat(offset),     // Width
+                            _reader.ReadFloat(offset + 4), // Height
+                            _reader.ReadFloat(offset + 8)  // Length
+                        ); offset += 12;
+                        trailers[j] = trailer;
+                    }
+
+                    // Correct offset if no trailers (or under 2)
+                    if (vehicle.trailer_count < 2)
+                    {
+                        offset += 40 * (2 - vehicle.trailer_count);
+                    }
+
+                    vehicle.trailers = trailers;
+                    vehicles[i] = vehicle;
+                }
+                catch
                 {
-                    offset += 40 * (2 - vehicle.trailer_count);
+                    Logger.Error($"Error reading traffic vehicle at index {i}. Skipping.");
+                    break;
                 }
-
-                vehicle.trailers = trailers;
-                vehicles[i] = vehicle;
             }
             data.vehicles = vehicles;
             Events.Current.Publish<TrafficData>("ETS2LASDK.Traffic", data);
