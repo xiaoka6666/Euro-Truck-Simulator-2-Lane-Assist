@@ -274,6 +274,11 @@ namespace ETS2LA.Shared
         {
             return new double[] { X, Y, Z };
         }
+
+        public Vector3 ToVector3()
+        {
+            return new Vector3((float)X, (float)Y, (float)Z);
+        }
     }
 
     /// <summary>
