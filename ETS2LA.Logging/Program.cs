@@ -13,6 +13,7 @@ namespace ETS2LA.Logging
         public static string lastLine = "";
         public static int repeatCount = 0;
 
+        public static event Action<Tuple<string, string>> OnLog;
         static Logger()
         {
             Console = AnsiConsole.Console;
@@ -59,6 +60,7 @@ namespace ETS2LA.Logging
             Exception ex = null
         )
         {
+            OnLog?.Invoke(Tuple.Create(level, message));
             var source = GetSourceInfo(filePath, lineNumber);
             var timestamp = GetTimestamp();
             var levelTag = $"[{color}][[{level}]][/]";

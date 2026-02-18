@@ -1,10 +1,14 @@
 #pragma warning disable CA1416 // We check OS compatibility.
 using System.IO.MemoryMappedFiles;
+
 using ETS2LA.Shared;
 using ETS2LA.Backend.Events;
 using ETS2LA.UI.Notifications;
 using ETS2LA.Logging;
+using ETS2LA.AR;
+
 using System.Numerics;
+using Hexa.NET.ImGui;
 
 namespace GameTelemetry
 {
@@ -76,6 +80,17 @@ namespace GameTelemetry
             Logger.Info("Game Telemetry plugin initialized.");
         }
 
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            ARHandler.Current.RegisterWindow(new WindowDefinition
+                {
+                    Title = "Telemetry"
+                }, 
+                RenderWindow
+            );
+        }
+
         public override void OnDisable()
         {
             base.OnDisable();
@@ -103,6 +118,7 @@ namespace GameTelemetry
             }
             catch (FileNotFoundException)
             {
+                telemetry.sdkActive = false;
                 NotificationHandler.Current.SendNotification(new Notification
                 {
                     Id = "GameTelemetry.MMFNotFound",
@@ -470,6 +486,127 @@ namespace GameTelemetry
 
             // Publish to the event bus
             Events.Current.Publish<GameTelemetryData>("GameTelemetry.Data", telemetry);
+        }
+
+        private void RenderValue(string name, object value)
+        {
+            // Render the name as normal, but the value color depends on it's type 
+            // int: Blue
+            // string: Green
+            // bool: (Yellow if true, Red if false)
+            ImGui.Text($"{name}: ");
+
+            Vector4 valueColor = new Vector4(1f, 1f, 1f, 1f);
+            if (value is int || value is float || value is Single) valueColor = new Vector4(0.5f, 0.5f, 1f, 1f);
+            else if (value is string) valueColor = new Vector4(0.5f, 1f, 0.5f, 1f);
+            else if (value is bool b)
+            {
+                if (b) valueColor = new Vector4(1f, 1f, 0.5f, 1f);
+                else valueColor = new Vector4(1f, 0.5f, 0.5f, 1f);
+            }
+            else if (value is Vector3)
+            {
+                valueColor = new Vector4(0.5f, 0.5f, 1f, 1f);
+                var vec = (Vector3)value;
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+                ImGui.Text($"[{vec.X}, {vec.Y}, {vec.Z}]");
+                ImGui.PopStyleColor();
+                return;
+            }
+            else if (value is Vector3[])
+            {
+                valueColor = new Vector4(0.5f, 0.5f, 1f, 1f);
+                var arr = (Vector3[])value;
+                foreach (var item in arr)
+                {
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+                    ImGui.Text($"[{item.X}, {item.Y}, {item.Z}]");
+                    ImGui.PopStyleColor();
+                }
+                return;
+            }
+            else if (value is System.Int32[])
+            {
+                valueColor = new Vector4(0.5f, 0.5f, 1f, 1f);
+                var arr = (System.Int32[])value;
+                foreach (var item in arr)
+                {
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+                    ImGui.Text(item.ToString());
+                    ImGui.PopStyleColor();
+                }
+                return;
+            }
+            else if (value is System.Single[])
+            {
+                valueColor = new Vector4(0.5f, 0.5f, 1f, 1f);
+                var arr = (System.Single[])value;
+                foreach (var item in arr)
+                {
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+                    ImGui.Text(item.ToString());
+                    ImGui.PopStyleColor();
+                }
+                return;
+            }
+            else if (value is System.Boolean[])
+            {
+                var arr = (System.Boolean[])value;
+                foreach (var item in arr)
+                {
+                    ImGui.SameLine();
+                    valueColor = item ? new Vector4(1f, 1f, 0.5f, 1f) : new Vector4(1f, 0.5f, 0.5f, 1f);
+                    ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+                    ImGui.Text(item.ToString());
+                    ImGui.PopStyleColor();
+                }
+                return;
+            }
+
+            ImGui.SameLine();
+            ImGui.PushStyleColor(ImGuiCol.Text, valueColor);
+            ImGui.Text(value.ToString());
+            ImGui.PopStyleColor();
+        }
+
+        public void RenderWindow()
+        {
+            if(telemetry == null || !telemetry.sdkActive)
+            {
+                ImGui.Text("Not connected to the game. Please open ETS2 or ATS and enable the SDK.");
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.6f, 0.6f, 0.6f, 1f));
+                ImGui.Text("You'll need to install the SDK with the python version of ETS2LA.");
+                ImGui.PopStyleColor();
+                return;
+            }
+            // Render all of the latest telemetry data
+            foreach (var field in telemetry.GetType().GetFields())
+            {
+                // Check if this one is another class
+                if (field.FieldType.IsClass)
+                {
+                    ImGui.Separator();
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 1f, 0.5f, 1f));
+                    ImGui.Text($"{field.Name}:");
+                    ImGui.PopStyleColor();
+
+                    var subTelemetry = field.GetValue(telemetry);
+                    foreach (var subField in field.FieldType.GetFields())
+                    {
+                        var subValue = subField.GetValue(subTelemetry);
+                        RenderValue(subField.Name, subValue);
+                    }
+                }
+                else
+                {
+                    var value = field.GetValue(telemetry);
+                    RenderValue(field.Name, value);
+                }
+            }
         }
     }
 }
