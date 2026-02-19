@@ -49,8 +49,7 @@ public class PrefabsRenderer : Renderer
         float resolution = 0.25f; // meters
         foreach (var prefab in nearbyPrefabs.Values)
         {
-            if (!prefab.ShowInUiMap) continue;
-            if (!prefab.AiVehicles) continue;
+            //if (!prefab.ShowInUiMap) continue;
             if (invalidPrefabTypes.Contains(prefab.Model.ToString())) continue;
 
             var ppd = PpdFileHandler.Current.GetPpdFile(prefab.Model.ToString());
@@ -103,10 +102,18 @@ public class PrefabsRenderer : Renderer
             if (ImGui.IsMouseHoveringRect(minScreenPos, maxScreenPos))
             {
                 ImGui.BeginTooltip();
-                ImGui.Text($"Prefab: {prefab.Model} ({prefab.Look}, {prefab.Variant})");
+                ImGui.Spacing();
+                ImGui.Text("Prefab:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.8f, 1f, 1f, 1f), prefab.Model.ToString());
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"({prefab.Look}, {prefab.Variant})");
                 ImGui.Indent();
-                ImGui.Text($"UID: {prefab.Uid}");
+                ImGui.Text($"UID:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{prefab.Uid}");
                 ImGui.Unindent();
+                ImGui.Spacing();
                 ImGui.EndTooltip();
             }
         }

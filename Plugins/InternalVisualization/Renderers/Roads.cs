@@ -51,8 +51,8 @@ public class RoadsRenderer : Renderer
         foreach (var road in nearbyRoads.Values)
         {
             if (invalidRoadTypes.Contains(road.RoadType.ToString())) continue;
-            if (!road.ShowInUiMap) continue;
-            if (!road.AiVehicles) continue;
+            if (road.RoadType.ToString() == "") continue;
+            //if (!road.ShowInUiMap) continue;
 
             float resolution = 5f;
             float length = road.Length;
@@ -75,7 +75,6 @@ public class RoadsRenderer : Renderer
                 roadPoints.Add(point.Value);
             }
 
-            if (road.RoadType.ToString() == "") continue;
             float[] left, right;
             if (roadLaneCache.ContainsKey(road.RoadType.ToString()))
             {
@@ -85,6 +84,28 @@ public class RoadsRenderer : Renderer
             {
                 (left, right) = RoadUtils.CalculateRoadLaneCenters(road);
                 roadLaneCache.Add(road.RoadType.ToString(), (left, right));
+            }
+
+            // We have to take into account the previous road when doing these calculations.
+            // e.g. https://discord.com/channels/1120719484982939790/1120721175337775124/1474091490648133826
+            IMapItem previous = road.BackwardItem;
+            float[] prevLeft, prevRight;
+            if (previous is Road prevRoad)
+            {
+                if (roadLaneCache.ContainsKey(prevRoad.RoadType.ToString()))
+                {
+                    (prevLeft, prevRight) = roadLaneCache[prevRoad.RoadType.ToString()];
+                }
+                else
+                {
+                    (prevLeft, prevRight) = RoadUtils.CalculateRoadLaneCenters(prevRoad);
+                    roadLaneCache.Add(prevRoad.RoadType.ToString(), (prevLeft, prevRight));
+                }
+            }
+            else
+            {
+                prevLeft = [];
+                prevRight = [];
             }
 
             if (left.Length == 0 && right.Length == 0)
@@ -99,13 +120,17 @@ public class RoadsRenderer : Renderer
 
             Vector2 minScreenPos = new Vector2(float.MaxValue, float.MaxValue);
             Vector2 maxScreenPos = new Vector2(float.MinValue, float.MinValue);
-            foreach (var laneOffset in left)
+            for (int laneIndex = 0; laneIndex < left.Length; laneIndex++)
             {
+                var laneOffset = left[laneIndex];
+                var prevLaneOffset = prevLeft.Length > 0 ? prevLeft[laneIndex] : laneOffset;
+
                 List<Vector3> lanePoints = new List<Vector3>();
-                foreach (var roadPoint in roadPoints)
+                for (int i = 0; i < roadPoints.Count; i++)
                 {
-                    Vector3 normal = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, roadPoint.Rotation));
-                    Vector3 pointOnLane = roadPoint.Position + normal * -laneOffset;
+                    var pointOffset = RoadUtils.Lerp(prevLaneOffset, laneOffset, i / (float)(roadPoints.Count - 1));
+                    Vector3 normal = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, roadPoints[i].Rotation));
+                    Vector3 pointOnLane = roadPoints[i].Position + normal * -pointOffset;
                     lanePoints.Add(pointOnLane);
                 }
 
@@ -121,13 +146,17 @@ public class RoadsRenderer : Renderer
                 }
             }
 
-            foreach (var laneOffset in right)
+            for (int laneIndex = 0; laneIndex < right.Length; laneIndex++)
             {
                 List<Vector3> lanePoints = new List<Vector3>();
-                foreach (var roadPoint in roadPoints)
+                var laneOffset = right[laneIndex];
+                var prevLaneOffset = prevRight.Length > 0 ? prevRight[laneIndex] : laneOffset;
+
+                for (int i = 0; i < roadPoints.Count; i++)
                 {
-                    Vector3 normal = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, roadPoint.Rotation));
-                    Vector3 pointOnLane = roadPoint.Position + normal * -laneOffset;
+                    var pointOffset = RoadUtils.Lerp(prevLaneOffset, laneOffset, i / (float)(roadPoints.Count - 1));
+                    Vector3 normal = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, roadPoints[i].Rotation));
+                    Vector3 pointOnLane = roadPoints[i].Position + normal * -pointOffset;
                     lanePoints.Add(pointOnLane);
                 }
 
@@ -146,12 +175,26 @@ public class RoadsRenderer : Renderer
             if (ImGui.IsMouseHoveringRect(minScreenPos, maxScreenPos))
             {
                 ImGui.BeginTooltip();
-                ImGui.Text($"Road: {road.RoadType} ({road.Length}m)");
+                ImGui.Spacing();
+                ImGui.Text("Road:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.8f, 1f, 1f, 1f), road.RoadType.ToString());
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"({road.Length}m)");
                 ImGui.Indent();
-                ImGui.Text($"Lanes: {LanesToString(left)}, {LanesToString(right)}");
-                ImGui.Text($"Points: {roadPoints.Count * (left.Count() + right.Count())} ({roadPoints.Count} per lane)");
-                ImGui.Text($"UID: {road.Uid}");
+                ImGui.Text("Lanes:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 1f, 1f), $"{LanesToString(left)}, {LanesToString(right)}");
+                ImGui.Text("Points: ");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{roadPoints.Count * (left.Count() + right.Count())}");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"({roadPoints.Count} per lane)");
+                ImGui.Text($"UID:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{road.Uid}");
                 ImGui.Unindent();
+                ImGui.Spacing();
                 ImGui.EndTooltip();
             }
         }

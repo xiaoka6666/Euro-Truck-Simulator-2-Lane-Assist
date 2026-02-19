@@ -35,20 +35,27 @@ public class PpdFileHandler
         }
 
         SiiFileHandler.Current.SetFileSystem(_fs);
-        var prefabs = SiiFileHandler.Current.GetSiiFile("/def/world/prefab.sii");
-        if (prefabs == null)
-        {
-            Logger.Error("Failed to load prefab.sii for prefab path cache.");
-            return;
-        }
+        var prefabFiles = _fs.GetFiles("/def/world/");
+        prefabFiles = prefabFiles.Where(f => f.EndsWith(".sii") && f.StartsWith("/def/world/prefab.")).ToArray();
 
-        foreach (var unit in prefabs.Units)
+        foreach (var file in prefabFiles)
         {
-            var token = unit.Name.Split('.').Last();
-            var path = unit.Attributes["prefab_desc"].Trim('"');
-            if (!_prefabPathCache.ContainsKey(token))
+            Logger.Info($"Loading {file} to update prefab path cache.");
+            var sii = SiiFileHandler.Current.GetSiiFile(file);
+            if (sii == null)
             {
-                _prefabPathCache[token] = path;
+                Logger.Error($"Failed to load {file} for prefab path cache.");
+                continue;
+            }
+
+            foreach (var unit in sii.Units)
+            {
+                var token = unit.Name.Split('.').Last();
+                var path = unit.Attributes["prefab_desc"].Trim('"');
+                if (!_prefabPathCache.ContainsKey(token))
+                {
+                    _prefabPathCache[token] = path;
+                }
             }
         }
     }

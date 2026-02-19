@@ -68,9 +68,35 @@ public class TrafficRenderer : Renderer
             float length = vehicle.size.Z;
 
             DrawRectangle(drawList, screenPos, width, length, angle);
-
-            foreach (var trailer in vehicle.trailers)
+            if (ImGui.IsMouseHoveringRect(screenPos - new Vector2(length, width) * InternalVisualizationConstants.Scale, screenPos + new Vector2(length, width) * InternalVisualizationConstants.Scale))
             {
+                ImGui.BeginTooltip();
+                ImGui.Spacing();
+                ImGui.Text($"Traffic Vehicle:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.8f, 1f, 1f, 1f), $"{vehicle.id}");
+                ImGui.Indent();
+                ImGui.Text($"Speed:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 1f, 1f), $"{vehicle.speed * 3.6f:F1} km/h");
+                ImGui.Text($"Acceleration:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 1f, 1f), $"{vehicle.acceleration} m/s²");
+                ImGui.Text($"Position:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{center.X:F1}, {center.Y:F1}, {center.Z:F1}");
+                ImGui.Text($"Rotation:");
+                ImGui.SameLine();
+                ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{angle:F1}°");
+                ImGui.Unindent();
+                ImGui.Spacing();
+                ImGui.EndTooltip();
+            }
+
+            for (int i = 0; i < vehicle.trailers.Length; i++)
+            {
+                var trailer = vehicle.trailers[i];
+
                 Vector3 trailerCenter = trailer.position;
                 Vector2 trailerScreenPos = Utils.WorldToScreen(trailerCenter, telemetryData.truckPlacement.coordinate.ToVector3(), windowSize) + windowPos;
 
@@ -81,6 +107,29 @@ public class TrafficRenderer : Renderer
                 float trailerLength = trailer.size.Z;
 
                 DrawRectangle(drawList, trailerScreenPos, trailerWidth, trailerLength, trailerAngle);
+
+                if (ImGui.IsMouseHoveringRect(trailerScreenPos - new Vector2(trailerLength, trailerWidth) * InternalVisualizationConstants.Scale, trailerScreenPos + new Vector2(trailerLength, trailerWidth) * InternalVisualizationConstants.Scale))
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.Spacing();
+                    ImGui.Text($"Trailer");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.8f, 1f, 1f, 1f), $"{i}");
+                    ImGui.SameLine();
+                    ImGui.Text("for vehicle:");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.8f, 1f, 1f, 1f), $"{vehicle.id}");
+                    ImGui.Indent();
+                    ImGui.Text($"Position:");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{trailerCenter.X:F1}, {trailerCenter.Y:F1}, {trailerCenter.Z:F1}");
+                    ImGui.Text($"Rotation:");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.6f, 0.6f, 0.6f, 1f), $"{trailerAngle:F1}°");
+                    ImGui.Unindent();
+                    ImGui.Spacing();
+                    ImGui.EndTooltip();
+                }
             }
         }
     }

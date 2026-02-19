@@ -121,6 +121,11 @@ public static class RoadUtils
 
         return (leftCenters, rightCenters);
     }
+
+    public static float Lerp(float a, float b, float t)
+    {
+        return a + (b - a) * t;
+    }
 }
 
 public static class PrefabUtils
