@@ -51,6 +51,9 @@ public class RoadsRenderer : Renderer
         foreach (var road in nearbyRoads.Values)
         {
             if (invalidRoadTypes.Contains(road.RoadType.ToString())) continue;
+            if (!road.ShowInUiMap) continue;
+            if (!road.AiVehicles) continue;
+
             float resolution = 5f;
             float length = road.Length;
 
@@ -144,7 +147,11 @@ public class RoadsRenderer : Renderer
             {
                 ImGui.BeginTooltip();
                 ImGui.Text($"Road: {road.RoadType} ({road.Length}m)");
-                ImGui.Text($"- Lanes: {LanesToString(left)}, {LanesToString(right)}");
+                ImGui.Indent();
+                ImGui.Text($"Lanes: {LanesToString(left)}, {LanesToString(right)}");
+                ImGui.Text($"Points: {roadPoints.Count * (left.Count() + right.Count())} ({roadPoints.Count} per lane)");
+                ImGui.Text($"UID: {road.Uid}");
+                ImGui.Unindent();
                 ImGui.EndTooltip();
             }
         }

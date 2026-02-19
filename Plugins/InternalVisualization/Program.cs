@@ -43,6 +43,7 @@ namespace InternalVisualization
             new PrefabsRenderer(),
             new TrafficRenderer(),
             new TruckRenderer(),
+            new StatisticsRenderer(),
         };
 
         private GameTelemetryData? _telemetryData;

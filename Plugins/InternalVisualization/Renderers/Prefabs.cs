@@ -15,6 +15,9 @@ namespace InternalVisualization.Renderers;
 
 public class PrefabsRenderer : Renderer
 {
+
+    private List<string> invalidPrefabTypes = new List<string>();
+
     public override void Render(ImDrawListPtr drawList, Vector2 windowPos, Vector2 windowSize, 
                                 GameTelemetryData telemetryData, MapData mapData, Road[] roads, Prefab[] prefabs, IReadOnlyList<Node> nearbyNodes)
     {
@@ -48,10 +51,12 @@ public class PrefabsRenderer : Renderer
         {
             if (!prefab.ShowInUiMap) continue;
             if (!prefab.AiVehicles) continue;
+            if (invalidPrefabTypes.Contains(prefab.Model.ToString())) continue;
 
             var ppd = PpdFileHandler.Current.GetPpdFile(prefab.Model.ToString());
             if (ppd == null)
             {
+                invalidPrefabTypes.Add(prefab.Model.ToString());
                 Logger.Error($"Failed to load PPD file for prefab {prefab.Model}");
                 continue;
             }
@@ -69,9 +74,8 @@ public class PrefabsRenderer : Renderer
             {
                 List<Vector3> curvePoints = new List<Vector3>();
                 float step = 1 / curve.Length / resolution;
-                for (float t = 0; t <= 1; t += step)
+                for (float t = -step; t <= 1 + step; t += step)
                 {
-                    t = Math.Min(t, 1);
                     var point = PrefabUtils.InterpolateNavCurve(curve, t);
                     curvePoints.Add(point);
                 }
@@ -100,6 +104,9 @@ public class PrefabsRenderer : Renderer
             {
                 ImGui.BeginTooltip();
                 ImGui.Text($"Prefab: {prefab.Model} ({prefab.Look}, {prefab.Variant})");
+                ImGui.Indent();
+                ImGui.Text($"UID: {prefab.Uid}");
+                ImGui.Unindent();
                 ImGui.EndTooltip();
             }
         }

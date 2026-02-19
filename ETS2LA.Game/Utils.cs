@@ -24,22 +24,10 @@ public static class RoadUtils
         Unit? roadTmpl = null;
 
         // Usually templates seem to have the "road." prefix
+        // however some don't, so we gotta check for both.
         try
         {
-            roadTmpl = sii.Units.First(u => u.Name == $"road.{road.RoadType}");
-        } catch (InvalidOperationException)
-        {
-            Logger.Error($"Road template for {road.RoadType} not found in SII file.");
-            return ([], []);
-        }
-
-        // however some don't, so for those we try again without the prefix
-        try
-        {
-            if (roadTmpl == null)
-            {
-                roadTmpl = sii.Units.First(u => u.Name == $"{road.RoadType}");
-            }
+            roadTmpl = sii.Units.First(u => u.Name == $"road.{road.RoadType}" || u.Name == $"{road.RoadType}");
         } catch (InvalidOperationException)
         {
             Logger.Error($"Road template for {road.RoadType} not found in SII file.");
@@ -47,7 +35,7 @@ public static class RoadUtils
         }
 
         const float laneWidth = 4.5f;
-        const float halfLaneWidth = 2.25f;
+        const float halfLaneWidth = laneWidth / 2f;
 
         if (!roadTmpl.Attributes.TryGetValue("lanes_right", out var rightLanes))
         {
@@ -57,10 +45,32 @@ public static class RoadUtils
         var hasLeftModel = roadTmpl.Attributes.TryGetValue("lanes_left", out var leftLanes);
 
         // Generate lane center sequence
+        var roadCenter = 0f;
+        var totalLanes = (leftLanes != null ? leftLanes.Count : 0) + rightLanes.Count;
+        if (hasLeftModel && totalLanes % 2 == 1)
+        {
+            int offset = leftLanes.Count - rightLanes.Count;
+            roadCenter = offset * laneWidth;
+        }
+
         var rightCenters = new float[rightLanes.Count];
-        rightCenters[0] = hasLeftModel
-            ? halfLaneWidth
-            : MathF.Ceiling(rightLanes.Count / 2f) * (-laneWidth) + halfLaneWidth;
+        rightCenters[0] = 0;
+
+        // Unbalanced two-way roads (e.g. 2 lanes on the right, 1 lane on the left) are centered around the middle lane, 
+        // so we need to offset the right lanes accordingly.
+        // Two sided road.
+        if (hasLeftModel)
+            rightCenters[0] = roadCenter + halfLaneWidth;
+        // One-way with only one lane
+        else if (!hasLeftModel && rightLanes.Count == 1)
+            rightCenters[0] = roadCenter + halfLaneWidth;
+        // One-way with an odd number of lanes, so there's a center lane
+        else if (rightLanes.Count % 2 == 1 && !hasLeftModel)
+            rightCenters[0] = roadCenter - halfLaneWidth;
+        // Others, e.g. one-way with an even number of lanes
+        else
+            rightCenters[0] = roadCenter + MathF.Ceiling(rightLanes.Count / 2f) * (-laneWidth) + halfLaneWidth;
+
         for (int i = 1; i < rightLanes.Count; i++)
             rightCenters[i] = rightCenters[i - 1] + laneWidth;
 
@@ -68,7 +78,7 @@ public static class RoadUtils
         if (hasLeftModel)
         {
             leftCenters = new float[leftLanes?.Count];
-            leftCenters[0] = -halfLaneWidth;
+            leftCenters[0] = roadCenter - halfLaneWidth;
             for (int i = 1; i < leftLanes?.Count; i++)
                 leftCenters[i] = leftCenters[i - 1] - laneWidth;
         }
