@@ -1,4 +1,5 @@
 using ETS2LA.Game;
+using ETS2LA.Game.PpdFiles;
 using ETS2LA.Shared;
 using ETS2LA.Logging;
 
@@ -7,6 +8,8 @@ using Hexa.NET.ImGui;
 using System.Numerics;
 using TruckLib;
 using Avalonia.Controls;
+using TruckLib.Models.Ppd;
+using ETS2LA.Game.Utils;
 
 namespace InternalVisualization.Renderers;
 
@@ -39,32 +42,66 @@ public class PrefabsRenderer : Renderer
             }
         }
 
-        //foreach (var prefab in nearbyPrefabs.Values)
-        //{
-        //    float resolution = 1f;
-        //    float length = road.Length;
 
-        //    float[] steps = new float[(int)(length / resolution) + 1];
-        //    for (int i = 0; i < steps.Length; i++)
-        //    {
-        //        steps[i] = i * resolution;
-        //    }
+        float resolution = 0.25f; // meters
+        foreach (var prefab in nearbyPrefabs.Values)
+        {
+            if (!prefab.ShowInUiMap) continue;
+            if (!prefab.AiVehicles) continue;
 
-        //    for(int i = 0; i < steps.Length - 1; i++)
-        //    {
-        //        bool isEnd = false;
-        //        if (steps[i + 1] > length) isEnd = true;
+            var ppd = PpdFileHandler.Current.GetPpdFile(prefab.Model.ToString());
+            if (ppd == null)
+            {
+                Logger.Error($"Failed to load PPD file for prefab {prefab.Model}");
+                continue;
+            }
 
-        //        OrientedPoint? startPoint = road.InterpolateCurveDist(steps[i]);
-        //        if (startPoint == null) continue;
-        //        Vector2 start = Utils.WorldToScreen(startPoint.Value.Position, center.ToVector3(), windowSize) + windowPos;
+            PrefabDescriptor desc = (PrefabDescriptor)ppd;
+            int origin = prefab.Origin;
 
-        //        OrientedPoint? endPoint = !isEnd ? road.InterpolateCurveDist(steps[i + 1]) : road.InterpolateCurve(1);
-        //        if (endPoint == null) continue;
-        //        Vector2 end = Utils.WorldToScreen(endPoint.Value.Position, center.ToVector3(), windowSize) + windowPos;
+            Vector3 prefabStart = prefab.Nodes[0].Position - desc.Nodes[origin].Position;
+            Vector3 prefabRotation = prefab.Nodes[0].Rotation.ToEuler() - MathEx.GetNodeRotation(desc.Nodes[origin].Direction).ToEuler();
+            Matrix4x4 rotationMatrix = Matrix4x4.CreateRotationY(prefabRotation.Y, prefab.Nodes[0].Position);
 
-        //        drawList.AddLine(start, end, ImGui.GetColorU32(new Vector4(0.6f, 0.6f, 0.6f, 1)), 2);
-        //    }
-        //}
+            Vector2 minScreenPos = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 maxScreenPos = new Vector2(float.MinValue, float.MinValue);
+            foreach (var curve in desc.NavCurves)
+            {
+                List<Vector3> curvePoints = new List<Vector3>();
+                float step = 1 / curve.Length / resolution;
+                for (float t = 0; t <= 1; t += step)
+                {
+                    t = Math.Min(t, 1);
+                    var point = PrefabUtils.InterpolateNavCurve(curve, t);
+                    curvePoints.Add(point);
+                }
+
+                // Convert from 0,0 to world coordinates.
+                for (int i = 0; i < curvePoints.Count; i++)
+                {
+                    curvePoints[i] = Vector3.Transform(curvePoints[i] + prefabStart, rotationMatrix);
+                }
+
+                // Render in screenspace
+                for (int i = 0; i < curvePoints.Count - 1; i++)
+                {
+                    Vector2 screenPos = Utils.WorldToScreen(curvePoints[i], center.ToVector3(), windowSize) + windowPos;
+                    Vector2 nextScreenPos = Utils.WorldToScreen(curvePoints[i + 1], center.ToVector3(), windowSize) + windowPos;
+                    if (screenPos.X < minScreenPos.X) minScreenPos.X = screenPos.X;
+                    if (screenPos.Y < minScreenPos.Y) minScreenPos.Y = screenPos.Y;
+                    if (screenPos.X > maxScreenPos.X) maxScreenPos.X = screenPos.X;
+                    if (screenPos.Y > maxScreenPos.Y) maxScreenPos.Y = screenPos.Y;
+
+                    drawList.AddLine(screenPos, nextScreenPos, ImGui.GetColorU32(new Vector4(0.5f, 0.5f, 0.4f, 1)), 2 * InternalVisualizationConstants.Scale);
+                }
+
+            }
+            if (ImGui.IsMouseHoveringRect(minScreenPos, maxScreenPos))
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text($"Prefab: {prefab.Model} ({prefab.Look}, {prefab.Variant})");
+                ImGui.EndTooltip();
+            }
+        }
     }
 }

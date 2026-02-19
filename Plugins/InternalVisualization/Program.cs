@@ -1,16 +1,19 @@
 using ETS2LA.Logging;
-using ETS2LA.Game;
 using ETS2LA.AR;
 using ETS2LA.Shared;
 using ETS2LA.Backend.Events;
 
+using ETS2LA.Game;
+using ETS2LA.Game.SiiFiles;
+using ETS2LA.Game.PpdFiles;
+
 using InternalVisualization.Renderers;
 
+using TruckLib;
 using TruckLib.ScsMap;
+
 using Hexa.NET.ImGui;
 using System.Numerics;
-using TruckLib;
-using ETS2LA.Game.SiiFiles;
 
 namespace InternalVisualization
 {
@@ -37,6 +40,7 @@ namespace InternalVisualization
         {
             new NodesRenderer(),
             new RoadsRenderer(),
+            new PrefabsRenderer(),
             new TrafficRenderer(),
             new TruckRenderer(),
         };
@@ -87,6 +91,7 @@ namespace InternalVisualization
             _mapData = GameHandler.Current.Installations[installation].GetMapData();
             var fs = GameHandler.Current.Installations[installation].GetFileSystem();
             if(fs != null) SiiFileHandler.Current.SetFileSystem(fs);
+            if(fs != null) PpdFileHandler.Current.SetFileSystem(fs);
 
             _roads = _mapData.MapItems.Where(item => item is Road).Cast<Road>().ToArray();
             _prefabs = _mapData.MapItems.Where(item => item is Prefab).Cast<Prefab>().ToArray();

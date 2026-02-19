@@ -5,6 +5,7 @@ using TruckLib;
 using ETS2LA.Logging;
 
 using ETS2LA.Game.SiiFiles;
+using TruckLib.Models.Ppd;
 namespace ETS2LA.Game.Utils;
 
 public static class RoadUtils
@@ -109,5 +110,64 @@ public static class RoadUtils
         }
 
         return (leftCenters, rightCenters);
+    }
+}
+
+public static class PrefabUtils
+{
+    public static Vector3 InterpolateNavCurve(NavCurve curve, float t)
+    {
+        var fakeStart = new FakeNode(curve.StartPosition, curve.StartRotation);
+        var fakeEnd = new FakeNode(curve.EndPosition, curve.EndRotation);
+        
+        return HermiteSpline.InterpolatePolyline(fakeStart, fakeEnd, t);
+    }
+
+    /// <summary>
+    ///  This class is effectively just a position/rotation container so that we can use the existing HermiteSpline
+    ///  interpolation code without needing to touch TruckLib. Should not be used for any other purpose!
+    /// </summary>
+    public class FakeNode : INode
+    {
+        public ulong Uid { get; set; }
+        public byte BackwardCountry { get; set; }
+        public IMapObject BackwardItem { get; set; }
+        public byte ForwardCountry { get; set; }
+        public IMapObject ForwardItem { get; set; }
+        public bool FreeRotation { get; set; }
+        public bool IsCountryBorder { get; set; }
+        public bool IsRed { get; set; }
+        public bool Locked { get; set; }
+
+        public Vector3 Position { get; set; }
+        public Quaternion Rotation { get; set; }
+
+        public IItemContainer Parent { get; set; }
+        public bool IsCurveLocator { get; set; }
+        public bool PlayerVehicleTypeChange { get; set; }
+        public bool FwdTruck { get; set; }
+        public bool FwdBus { get; set; }
+        public bool FwdCar { get; set; }
+        public bool BwdTruck { get; set; }
+        public bool BwdBus { get; set; }
+        public bool BwdCar { get; set; }
+        public bool IsOrphaned() { return false; }
+        public void Move(Vector3 newPos) {}
+        public void Translate(Vector3 translation) {}
+        public void Merge(INode n2) {}
+        public INode Split() { return this; }
+        public string ToString() { return ""; }
+        public void UpdateItemReferences(Dictionary<ulong, MapItem> allItems) {}
+        public void Deserialize(BinaryReader r, uint? version = null) {}
+        public void Serialize(BinaryWriter w) {}
+
+        public FakeNode(Vector3 position, Quaternion rotation)
+        {
+            Position = position;
+            Rotation = rotation;
+
+            BackwardItem = new Node();
+            ForwardItem = new Node();
+        }
     }
 }

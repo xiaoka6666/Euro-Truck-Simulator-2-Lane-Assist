@@ -10,6 +10,7 @@ using Extractor;
 using Extractor.Zip;
 using TruckLib.Sii;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using ETS2LA.Game.SiiFiles;
 
 namespace ETS2LA.Game;
 

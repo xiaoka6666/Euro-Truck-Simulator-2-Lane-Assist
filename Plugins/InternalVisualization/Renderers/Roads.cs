@@ -15,6 +15,12 @@ public class RoadsRenderer : Renderer
     private List<string> invalidRoadTypes = new List<string>();
     private Dictionary<string, (float[] Left, float[] Right)> roadLaneCache = new Dictionary<string, (float[] Left, float[] Right)>();
     
+    private string LanesToString(float[] lanes)
+    {
+        if (lanes.Length == 0) return "[0]";
+        return "[" + string.Join(", ", lanes) + "]";
+    }
+
     public override void Render(ImDrawListPtr drawList, Vector2 windowPos, Vector2 windowSize, 
                                 GameTelemetryData telemetryData, MapData mapData, Road[] roads, Prefab[] prefabs, IReadOnlyList<Node> nearbyNodes)
     {
@@ -88,6 +94,8 @@ public class RoadsRenderer : Renderer
                 continue;
             }
 
+            Vector2 minScreenPos = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 maxScreenPos = new Vector2(float.MinValue, float.MinValue);
             foreach (var laneOffset in left)
             {
                 List<Vector3> lanePoints = new List<Vector3>();
@@ -102,6 +110,10 @@ public class RoadsRenderer : Renderer
                 {
                     Vector2 start = Utils.WorldToScreen(lanePoints[i], center.ToVector3(), windowSize) + windowPos;
                     Vector2 end = Utils.WorldToScreen(lanePoints[i + 1], center.ToVector3(), windowSize) + windowPos;
+                    if (start.X < minScreenPos.X) minScreenPos.X = start.X;
+                    if (start.Y < minScreenPos.Y) minScreenPos.Y = start.Y;
+                    if (start.X > maxScreenPos.X) maxScreenPos.X = start.X;
+                    if (start.Y > maxScreenPos.Y) maxScreenPos.Y = start.Y;
                     drawList.AddLine(start, end, ImGui.GetColorU32(new Vector4(0.6f, 0.4f, 0.4f, 1)), 2 * InternalVisualizationConstants.Scale);
                 }
             }
@@ -119,9 +131,21 @@ public class RoadsRenderer : Renderer
                 for (int i = 0; i < lanePoints.Count - 1; i++)
                 {
                     Vector2 start = Utils.WorldToScreen(lanePoints[i], center.ToVector3(), windowSize) + windowPos;
+                    if (start.X < minScreenPos.X) minScreenPos.X = start.X;
+                    if (start.Y < minScreenPos.Y) minScreenPos.Y = start.Y;
+                    if (start.X > maxScreenPos.X) maxScreenPos.X = start.X;
+                    if (start.Y > maxScreenPos.Y) maxScreenPos.Y = start.Y;
                     Vector2 end = Utils.WorldToScreen(lanePoints[i + 1], center.ToVector3(), windowSize) + windowPos;
                     drawList.AddLine(start, end, ImGui.GetColorU32(new Vector4(0.4f, 0.6f, 0.4f, 1)), 2 * InternalVisualizationConstants.Scale);
                 }
+            }
+
+            if (ImGui.IsMouseHoveringRect(minScreenPos, maxScreenPos))
+            {
+                ImGui.BeginTooltip();
+                ImGui.Text($"Road: {road.RoadType} ({road.Length}m)");
+                ImGui.Text($"- Lanes: {LanesToString(left)}, {LanesToString(right)}");
+                ImGui.EndTooltip();
             }
         }
     }
