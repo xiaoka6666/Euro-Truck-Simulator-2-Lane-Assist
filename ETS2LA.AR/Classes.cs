@@ -1,3 +1,4 @@
+using Hexa.NET.ImGui;
 using Avalonia.Data;
 
 namespace ETS2LA.AR
@@ -5,6 +6,7 @@ namespace ETS2LA.AR
     public struct WindowDefinition
     {
         public string Title;
+        public Optional<ImGuiWindowFlags> Flags;
         public Optional<int> Width;
         public Optional<int> Height;
         public Optional<int> X;

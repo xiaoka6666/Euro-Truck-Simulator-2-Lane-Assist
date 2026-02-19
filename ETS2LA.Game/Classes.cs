@@ -8,7 +8,9 @@ using TruckLib;
 // Copied from https://github.com/sk-zk/Extractor
 using Extractor;
 using Extractor.Zip;
+using TruckLib.Sii;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using ETS2LA.Game.SiiFiles;
 
 namespace ETS2LA.Game;
 
@@ -28,7 +30,6 @@ public class Mod
 public enum IgnoredItemTypes
 {
     Terrain = 0x01,
-    Buildings = 0x02,
     Model = 0x05,
     Company = 0x06,
     Service = 0x07,
@@ -43,8 +44,6 @@ public enum IgnoredItemTypes
     Garage = 0x16,
     CameraPoint = 0x17,
     Walker = 0x1C,
-    Trigger = 0x22,
-    Sign = 0x24,
     TrafficArea = 0x26,
     BezierPatch = 0x27,
     Compound = 0x28,
@@ -75,9 +74,12 @@ public class MapData : Map
         }
         
         // Additionally drop terrain data of prefabs and roads;
-        // also saves some memory.
+        // also saves some memory. Dropping entire prefabs/roads can also be
+        // done for items that are "secret" (i.e. not show in the UI map) since
+        // they aren't relevant for driving.
         if (item is Prefab p)
         {
+            if (!p.ShowInUiMap) return false;
             foreach (var node in p.PrefabNodes)
             {
                 node.Terrain = null;
@@ -85,6 +87,7 @@ public class MapData : Map
         }
         else if (item is Road r)
         {
+            if (!r.ShowInUiMap) return false;
             r.Left.Terrain = null;
             r.Right.Terrain = null;
         }         
@@ -244,6 +247,11 @@ public class Installation
 
             return "/map/usa.mbd";
         }
+    }
+
+    public IFileSystem? GetFileSystem()
+    {
+        return _assetLoader;
     }
 
     public MapData? GetMapData()

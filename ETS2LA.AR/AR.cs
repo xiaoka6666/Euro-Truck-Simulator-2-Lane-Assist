@@ -32,6 +32,7 @@ public class ARHandler
         Type = ControlType.Boolean
     };
     private bool _isInteracting = false;
+    private float _deltaTime = 0f;
     
     private Dictionary<WindowDefinition, Delegate> WindowRenderers = new();
     private List<Tuple<string, string>> _consoleMessages = new();
@@ -40,6 +41,7 @@ public class ARHandler
     public bool ShowDemoWindow { get; set; } = false;
     public bool ShowConsole { get; set; } = true;
     public bool ShowARInfo { get; set; } = true;
+    public float LastFrameTime => _deltaTime;
 
     private string glslVersion = "#version 150";
     private GLFWwindowPtr _window;
@@ -85,6 +87,7 @@ public class ARHandler
 
         while (GLFW.WindowShouldClose(_window) == 0)
         {
+            float startTime = DateTime.Now.Ticks;
             if (!_isInteracting) { 
                 // Maintain NoInputs on ImGui's main viewport.
                 // TODO: Figure out why this doesn't save.
@@ -126,6 +129,7 @@ public class ARHandler
             GLFW.MakeContextCurrent(_window);
             // Swap front and back buffers (double buffering)
             GLFW.SwapBuffers(_window);
+            _deltaTime = (DateTime.Now.Ticks - startTime) / (float)TimeSpan.TicksPerSecond;
         }
 
         ImGuiImplOpenGL3.Shutdown();
@@ -168,7 +172,9 @@ public class ARHandler
             var def = kvp.Key;
             var renderAction = kvp.Value;
             ImGui.SetNextWindowSize(new Vector2(def.Width.GetValueOrDefault(800), def.Height.GetValueOrDefault(600)), ImGuiCond.FirstUseEver);
-            ImGui.Begin(def.Title);
+            ImGui.Begin(def.Title, def.Flags.GetValueOrDefault(ImGuiWindowFlags.None));
+            if (ImGui.IsWindowCollapsed()) { ImGui.End(); continue; }
+            
             renderAction.DynamicInvoke();
             ImGui.End();
         }
