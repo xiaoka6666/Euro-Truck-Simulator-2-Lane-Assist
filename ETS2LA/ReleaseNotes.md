@@ -1,5 +1,7 @@
-### ETS2LA C# 3.1.0
-* Implemented `Internal Visualization` plugin for renderings roads, prefabs and nodes on the screen.
-* This plugin is an early preview of our internal data updates when compared to the old Python implementation.
-* Please check that the information in the `Internal Visualization` plugin matches what you see in the game, and report any discrepancies to us.
-* The code from `Internal Visualization` will be extracted and made available to other plugins in the backend once we're confident that the data is correct.
+### ETS2LA C# 3.1.1
+* Fixed loading of DLC roads. They should now work as well as non-DLC roads.
+* Added slight background darkening when interacting with the AR overlay.
+* Changed AR overlay font to match the one used in the main application.
+* CCode `(inline code blocks)` now have their proper monospace font and padding again.
+
+**NOTE:** If you're not in the ETS2LA beta program, please take a look at https://ets2la.com/downloads. This version is not what you're looking for!
