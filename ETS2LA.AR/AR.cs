@@ -171,7 +171,7 @@ public class ARHandler
 
         if (ShowARInfo)
         {
-            ImGui.Begin("Welcome!");
+            ImGui.Begin("Welcome!", ImGuiWindowFlags.AlwaysAutoResize);
             ImGui.SetWindowPos(new Vector2(OverlayWidth/2, OverlayHeight/2), ImGuiCond.Once);
             RenderARInfo();
             RenderWindowContextMenu(() => ShowARInfo = false);
@@ -187,7 +187,7 @@ public class ARHandler
             RenderWindowContextMenu(() => ShowConsole = false);
             ImGui.End();
         }
-        
+
         foreach (var kvp in WindowRenderers)
         {
             var def = kvp.Key;
@@ -277,6 +277,13 @@ public class ARHandler
         if ((_io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
         {
             style.WindowRounding = 0.0f;
+        }
+
+        // Set fonts
+        unsafe
+        {
+            _io.Fonts.AddFontFromFileTTF("Assets/Fonts/Geist-Medium.ttf");
+            style.FontSizeBase = 18f;
         }
 
         ImGuiImplGLFW.SetCurrentContext(_imGuiContext);
