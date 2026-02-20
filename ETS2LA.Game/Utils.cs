@@ -18,17 +18,12 @@ public static class RoadUtils
     /// <returns>A tuple containing two float arrays: the left lane centers and the right lane centers.</returns>
     public static (float[] Left, float[] Right) CalculateRoadLaneCenters(Road road)
     {
-        var sii = SiiFileHandler.Current.GetSiiFile(@"/def/world/road_look.template.sii");
-        if (sii == null) return ([], []);
-
-        Unit? roadTmpl = null;
-
+        Unit? roadTmpl;
         // Usually templates seem to have the "road." prefix
         // however some don't, so we gotta check for both.
-        try
-        {
-            roadTmpl = sii.Units.First(u => u.Name == $"road.{road.RoadType}" || u.Name == $"{road.RoadType}");
-        } catch (InvalidOperationException)
+        roadTmpl = SiiFileHandler.Current.GetRoadUnit("road." + road.RoadType.ToString());
+        if (roadTmpl == null) roadTmpl = SiiFileHandler.Current.GetRoadUnit(road.RoadType.ToString());
+        if (roadTmpl == null)
         {
             Logger.Error($"Road template for {road.RoadType} not found in SII file.");
             return ([], []);

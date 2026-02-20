@@ -40,7 +40,6 @@ public class PpdFileHandler
 
         foreach (var file in prefabFiles)
         {
-            Logger.Info($"Loading {file} to update prefab path cache.");
             var sii = SiiFileHandler.Current.GetSiiFile(file);
             if (sii == null)
             {
