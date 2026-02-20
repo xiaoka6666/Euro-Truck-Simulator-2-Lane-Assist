@@ -32,6 +32,7 @@ public class ARHandler
         Type = ControlType.Boolean
     };
     private bool _isInteracting = false;
+    private float _bgOpacityTarget = 0.0f;
     private float _deltaTime = 0f;
     
     private Dictionary<WindowDefinition, Delegate> WindowRenderers = new();
@@ -42,6 +43,9 @@ public class ARHandler
     public bool ShowConsole { get; set; } = true;
     public bool ShowARInfo { get; set; } = true;
     public float LastFrameTime => _deltaTime;
+
+    public float OverlayWidth => GLFW.GetVideoMode(GLFW.GetPrimaryMonitor()).Width;
+    public float OverlayHeight => GLFW.GetVideoMode(GLFW.GetPrimaryMonitor()).Height;
 
     private string glslVersion = "#version 150";
     private GLFWwindowPtr _window;
@@ -65,8 +69,14 @@ public class ARHandler
     private void HandleInput(object sender, ControlChangeEventArgs e)
     {
         bool b = (bool)e.NewValue;
-        if (!b) { _isInteracting = false; }
-        else { _isInteracting = true; }
+        if (b == _isInteracting) { return; }
+        _isInteracting = b;
+    }
+
+    private float LerpInOut(float start, float end, float t)
+    {
+        t = t * t * (3f - 2f * t); // Smoothstep easing
+        return start + (end - start) * t;
     }
 
     private void RenderLoop()
@@ -87,12 +97,14 @@ public class ARHandler
 
         while (GLFW.WindowShouldClose(_window) == 0)
         {
-            float startTime = DateTime.Now.Ticks;
+            float startTime = DateTime.Now.Millisecond;
             if (!_isInteracting) { 
                 // Maintain NoInputs on ImGui's main viewport.
                 // TODO: Figure out why this doesn't save.
-                ImGui.GetPlatformIO().Viewports[0].Flags |= ImGuiViewportFlags.NoInputs; 
+                ImGui.GetPlatformIO().Viewports[0].Flags |= ImGuiViewportFlags.NoInputs;
+                _bgOpacityTarget = 0.0f;
             }
+            else _bgOpacityTarget = 0.5f;
 
             GLFW.PollEvents();
 
@@ -115,7 +127,7 @@ public class ARHandler
             ImGui.Render();
             GLFW.MakeContextCurrent(_window);
 
-            _gl.ClearColor(0f, 0f, 0f, 0f);
+            _gl.ClearColor(0f, 0f, 0f, _bgOpacityTarget);
             _gl.Clear(GLClearBufferMask.ColorBufferBit);
             
             ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
@@ -129,7 +141,7 @@ public class ARHandler
             GLFW.MakeContextCurrent(_window);
             // Swap front and back buffers (double buffering)
             GLFW.SwapBuffers(_window);
-            _deltaTime = (DateTime.Now.Ticks - startTime) / (float)TimeSpan.TicksPerSecond;
+            _deltaTime = (DateTime.Now.Millisecond - startTime) / 1000f;
         }
 
         ImGuiImplOpenGL3.Shutdown();
@@ -146,12 +158,21 @@ public class ARHandler
 
     private void OnUIRender()
     {
+        if (_isInteracting)
+        {
+            ImGui.Begin("Interaction Mode", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoBackground);
+            ImGui.SetWindowPos(new Vector2(OverlayWidth / 2 - 60, 10), ImGuiCond.Always);
+            ImGui.TextColored(new Vector4(0.5f, 0.5f, 0.5f, 1f), "Interaction Mode");
+            ImGui.End();
+        }
+
         if (ShowDemoWindow)
             ImGui.ShowDemoWindow();
 
         if (ShowARInfo)
         {
             ImGui.Begin("Welcome!");
+            ImGui.SetWindowPos(new Vector2(OverlayWidth/2, OverlayHeight/2), ImGuiCond.Once);
             RenderARInfo();
             RenderWindowContextMenu(() => ShowARInfo = false);
             ImGui.End();
@@ -161,19 +182,24 @@ public class ARHandler
         {
             ImGui.SetNextWindowBgAlpha(0.5f);
             ImGui.Begin("Console", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.SetWindowPos(new Vector2(10, 10), ImGuiCond.Once);
             RenderConsole();
             RenderWindowContextMenu(() => ShowConsole = false);
             ImGui.End();
         }
-
-
+        
         foreach (var kvp in WindowRenderers)
         {
             var def = kvp.Key;
             var renderAction = kvp.Value;
-            ImGui.SetNextWindowSize(new Vector2(def.Width.GetValueOrDefault(800), def.Height.GetValueOrDefault(600)), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSize(new Vector2(def.Width.GetValueOrDefault(480), def.Height.GetValueOrDefault(320)), ImGuiCond.FirstUseEver);
+            
             ImGui.Begin(def.Title, def.Flags.GetValueOrDefault(ImGuiWindowFlags.None));
-            if (ImGui.IsWindowCollapsed()) { ImGui.End(); continue; }
+            var isCollapsed = ImGui.IsWindowCollapsed();
+            if (isCollapsed) {
+                ImGui.End(); 
+                continue; 
+            }
             
             renderAction.DynamicInvoke();
             ImGui.End();
