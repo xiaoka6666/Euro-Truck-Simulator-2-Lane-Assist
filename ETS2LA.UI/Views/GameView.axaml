@@ -33,13 +33,13 @@
                                     <TextBlock Text="{Binding Game}" FontSize="14" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding Path}" Classes="Description" FontSize="12" />
-                                <TextBlock Text="Selected Map Mods:" FontSize="13" Margin="0,8,0,0" />
-                                <TextBlock Text="Use Ctrl+Click to select multiple mods." FontSize="10" Classes="Description" Margin="0,0,0,4" />
+                                <TextBlock Text="已选择的地图模组:" FontSize="13" Margin="0,8,0,0" />
+                                <TextBlock Text="使用 Ctrl+点击 选择多个模组。" FontSize="10" Classes="Description" Margin="0,0,0,4" />
                                 <ListBox ItemsSource="{Binding Mods}" SelectedItems="{Binding SelectedMods}, Mode=TwoWay" SelectionMode="Multiple" />
                                 <Button Margin="0,10,0,0" Command="{Binding ParseMapDataCommand}" IsEnabled="{Binding !IsParsed}">
                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                         <i:Icon Value="fa-spinner" IsVisible="{Binding IsParsing}" Animation="Spin" />
-                                        <TextBlock Text="Parse Map Data" />
+                                        <TextBlock Text="解析地图数据" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
@@ -50,8 +50,8 @@
 
             <Border x:Name="PlaceholderPanel" Background="#16181D" BorderBrush="#2A2F37" BorderThickness="1" CornerRadius="12" Padding="14" IsVisible="False">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="No installations found" FontSize="16" FontWeight="SemiBold"/>
-                    <TextBlock Text="Please install ETS2 or ATS via Steam, and do not move the folder outside of the default installation directory." />
+                    <TextBlock Text="未找到安装" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="请通过 Steam 安装 ETS2 或 ATS，并且不要将文件夹移动到默认安装目录之外。" />
                 </StackPanel>
             </Border>
         </StackPanel>

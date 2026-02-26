@@ -14,7 +14,7 @@
                     <StackPanel Spacing="14">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock FontSize="18" FontFamily="{StaticResource Geist}">
-                                Welcome back, <Span Classes="Highlight">Anonymous</Span>!
+                                欢迎回来，<Span Classes="Highlight">匿名用户</Span>！
                             </TextBlock>
                         </Grid>
 
@@ -23,19 +23,19 @@
                         <WrapPanel ItemSpacing="16">
                             <StackPanel Spacing="4">
                                 <husk:Tag>
-                                    <TextBlock Text="Current Release" FontSize="12" FontWeight="450" />
+                                    <TextBlock Text="当前版本" FontSize="12" FontWeight="450" />
                                 </husk:Tag>
                                 <TextBlock Text="{Binding CurrentRelease}" FontSize="13" Margin="6 0 0 0"/>
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <husk:Tag>
-                                    <TextBlock Text="Users Online" FontSize="12" FontWeight="450" />
+                                    <TextBlock Text="在线用户" FontSize="12" FontWeight="450" />
                                 </husk:Tag>
                                 <TextBlock Text="{Binding UsersOnline}" FontSize="13" Margin="6 0 0 0"/>
                             </StackPanel>
                             <StackPanel Spacing="4">
                                 <husk:Tag>
-                                    <TextBlock Text="Users Over 24h" FontSize="12" FontWeight="450" />
+                                    <TextBlock Text="24小时用户" FontSize="12" FontWeight="450" />
                                 </husk:Tag>
                                 <TextBlock Text="{Binding UsersOver24h}" FontSize="13" Margin="6 0 0 0"/>
                             </StackPanel>
@@ -63,27 +63,27 @@
                     <StackPanel Spacing="6">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <i:Icon Value="fa-chart-line" FontSize="15" />
-                            <TextBlock Text="Sessions" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="会话" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         </StackPanel>
-                        <TextBlock Text="123 total - avg 4h56m" Classes="Description" FontSize="13"/>
+                        <TextBlock Text="123 总计 - 平均 4小时56分" Classes="Description" FontSize="13"/>
                     </StackPanel>
                 </husk:Card>
                 <husk:Card>
                     <StackPanel Spacing="6">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <i:Icon Value="fa-clock" FontSize="15" />
-                            <TextBlock Text="Playtime" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="游戏时间" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         </StackPanel>
-                        <TextBlock Text="123h 45m total" Classes="Description" FontSize="13"/>
+                        <TextBlock Text="123小时 45分 总计" Classes="Description" FontSize="13"/>
                     </StackPanel>
                 </husk:Card>
                 <husk:Card>
                     <StackPanel Spacing="6">
                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                             <i:Icon Value="fa-heart-circle-bolt" FontSize="15" />
-                            <TextBlock Text="Stability" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="稳定性" FontSize="16" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
                         </StackPanel>
-                        <TextBlock Text="1 crashes last 24h" Classes="Description" FontSize="13"/>
+                        <TextBlock Text="过去24小时崩溃 1 次" Classes="Description" FontSize="13"/>
                     </StackPanel>
                 </husk:Card>
             </UniformGrid>
@@ -93,12 +93,12 @@
                 <husk:Card>
                     <Grid RowDefinitions="Auto,*" RowSpacing="16">
                         <StackPanel Grid.Row="0" Spacing="4" VerticalAlignment="Top">
-                            <TextBlock Text="Support &amp; Updates" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock HorizontalAlignment="Stretch" Text="Follow development and get support. You can also donate to development via Ko-Fi, any kind of support is much appreciated!" Classes="Description" FontSize="13"/>
+                            <TextBlock Text="支持 &amp; 更新" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock HorizontalAlignment="Stretch" Text="关注开发进度并获取支持。您也可以通过 Ko-Fi 为开发捐款，任何支持都非常感谢！" Classes="Description" FontSize="13"/>
                         </StackPanel>
                         <WrapPanel Grid.Row="1" ItemSpacing="8" VerticalAlignment="Bottom">
-                            <Button Content="Join Discord" />
-                            <Button Content="Open GitHub" />
+                            <Button Content="加入 Discord" />
+                            <Button Content="打开 GitHub" />
                             <Button Content="Ko-Fi" Classes="Primary" />
                         </WrapPanel>
                     </Grid>

@@ -4,7 +4,7 @@
              x:Class="ETS2LA.UI.Views.Settings.SDKSettings"
              x:DataType="views:SDKSettings">
     <StackPanel>
-        <TextBlock Text="SDK Settings Page" />
-        <TextBlock Text="This page is waiting for game detection and SDK installation to be figured out." Classes="Description" />
+        <TextBlock Text="SDK 设置页面" />
+        <TextBlock Text="此页面等待游戏检测和 SDK 安装功能完成。" Classes="Description" />
     </StackPanel>
 </UserControl>

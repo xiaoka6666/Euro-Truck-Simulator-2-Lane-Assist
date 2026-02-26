@@ -181,10 +181,32 @@ public class TabStripItemHandler: INotifyPropertyChanged
 
     private string GetFormattedName()
     {
-        // Add a space before each capital letter (except the first)
-        // e.g., "AccelerationResponse" -> "Acceleration Response"
-        var formatted = System.Text.RegularExpressions.Regex.Replace(Item, "(\\B[A-Z])", " $1");
-        return formatted;
+        // Translate option names to Chinese
+        return Item switch
+        {
+            // AccelerationResponseOption
+            "Low" => "低",
+            "Medium" => "中",
+            "High" => "高",
+            // SteeringSensitivityOption
+            "Slow" => "慢",
+            "Normal" => "正常",
+            "Fast" => "快",
+            // FollowingDistanceOption
+            "Near" => "近",
+            "Far" => "远",
+            // SetSpeedBehaviour
+            "SpeedLimit" => "限速",
+            "CurrentSpeed" => "当前速度",
+            // SpeedLimitWarning
+            "Off" => "关闭",
+            "Visual" => "视觉",
+            "Chime" => "提示音",
+            // CollisionAvoidance
+            "Late" => "晚",
+            "Early" => "早",
+            _ => Item
+        };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

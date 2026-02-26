@@ -13,7 +13,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
-            <TextBlock Text="Click a card to change bindings. Right click on 'Normal Axis' to change it's type." Classes="Description" Margin="14 7 14 7" />
+            <TextBlock Text="点击卡片更改绑定。右键点击'普通轴'以更改其类型。" Classes="Description" Margin="14 7 14 7" />
             <ItemsControl x:Name="ControlsList" ItemsSource="{Binding Controls}" ItemsPanel="{StaticResource WrapPanelTemplate}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="views:ControlItem">
@@ -44,11 +44,11 @@
                                                 <husk:Tag.ContextMenu>
                                                     <!-- TODO: Someone who knows more about Avalonia can fix this... -->
                                                     <ContextMenu>
-                                                        <MenuItem Header="Normal" Click="OnAxisTypeNormalClick" Tag="{Binding}" />
-                                                        <MenuItem Header="Centered" Click="OnAxisTypeCenteredClick" Tag="{Binding}" />
-                                                        <MenuItem Header="Inverted" Click="OnAxisTypeInvertedClick" Tag="{Binding}" />
-                                                        <MenuItem Header="Split Negative" Click="OnAxisTypeSplitNegativeClick" Tag="{Binding}" />
-                                                        <MenuItem Header="Split Positive" Click="OnAxisTypeSplitPositiveClick" Tag="{Binding}" />
+                                                        <MenuItem Header="普通" Click="OnAxisTypeNormalClick" Tag="{Binding}" />
+                                                        <MenuItem Header="居中" Click="OnAxisTypeCenteredClick" Tag="{Binding}" />
+                                                        <MenuItem Header="反转" Click="OnAxisTypeInvertedClick" Tag="{Binding}" />
+                                                        <MenuItem Header="分割负值" Click="OnAxisTypeSplitNegativeClick" Tag="{Binding}" />
+                                                        <MenuItem Header="分割正值" Click="OnAxisTypeSplitPositiveClick" Tag="{Binding}" />
                                                     </ContextMenu>
                                                 </husk:Tag.ContextMenu>
                                             </husk:Tag>

@@ -31,7 +31,7 @@
                             <StackPanel Spacing="6" Width="302">
                                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                     <husk:Tag IsVisible="{Binding IsEnabled}" Classes="Primary">
-                                        <TextBlock Text="Enabled" FontSize="12" FontWeight="450" />
+                                        <TextBlock Text="已启用" FontSize="12" FontWeight="450" />
                                     </husk:Tag>
                                     <TextBlock Text="{Binding Name}" FontSize="14" />
                                 </StackPanel>
@@ -44,9 +44,9 @@
 
             <Border x:Name="PlaceholderPanel" IsVisible="{Binding !HasPlugins}">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="No plugins found" FontSize="16" FontWeight="SemiBold"/>
-                    <TextBlock Text="Drop plugin DLLs into the Plugins folder (or build existing plugin projects) and hit Refresh." />
-                    <Button Content="Refresh" Width="100" Click="OnRefreshButtonClick"/>
+                    <TextBlock Text="未找到插件" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="将插件 DLL 拖放到 Plugins 文件夹中（或构建现有插件项目），然后点击刷新。" />
+                    <Button Content="刷新" Width="100" Click="OnRefreshButtonClick"/>
                 </StackPanel>
             </Border>
         </StackPanel>

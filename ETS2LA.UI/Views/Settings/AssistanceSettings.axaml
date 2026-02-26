@@ -11,21 +11,21 @@
                 <StackPanel Spacing="3">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <husk:Tag IsVisible="{Binding SeparateCruiseAndSteering}" Classes="Primary" Width="35">
-                            <TextBlock Text="ON " Classes="Highlight" HorizontalAlignment="Center" />
+                            <TextBlock Text="开 " Classes="Highlight" HorizontalAlignment="Center" />
                         </husk:Tag>
                         <husk:Tag IsVisible="{Binding !SeparateCruiseAndSteering}" Classes="Secondary" Width="35">
-                            <TextBlock Text="OFF" Classes="Description" HorizontalAlignment="Center" />
+                            <TextBlock Text="关" Classes="Description" HorizontalAlignment="Center" />
                         </husk:Tag>
-                        <TextBlock Text="Separate Cruise and Steering" />
+                        <TextBlock Text="分离巡航和转向" />
                     </StackPanel>
-                    <TextBlock Text="Whether to separate cruise control and steering. If separated, a single tap will signal Cruise, while a double tap will enable both." FontSize="12" Classes="Description" />
+                    <TextBlock Text="是否分离巡航控制和转向。如果分离，单击将启动巡航，双击将同时启用两者。" FontSize="12" Classes="Description" />
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="SET Behaviour" />
-                    <TextBlock Text="When pressing the SET button, what should ETS2LA set as the current cruise control speed?" FontSize="12" Classes="Description" />
+                    <TextBlock Text="SET 行为" />
+                    <TextBlock Text="按下 SET 按钮时，ETS2LA 应将什么设置为当前巡航控制速度？" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding SetSpeedBehaviourOptions}" 
                         SelectedIndex="{Binding SelectedSetSpeedBehaviourOption}" 
@@ -44,8 +44,8 @@
 
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="Steering Response" />
-                    <TextBlock Text="Adjust how ETS2LA will respond to necessary steering changes. This for example controls how quickly ETS2LA will lane-change." FontSize="12" Classes="Description" />
+                    <TextBlock Text="转向响应" />
+                    <TextBlock Text="调整 ETS2LA 对必要转向变化的响应方式。例如，这控制 ETS2LA 变道的速度。" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding SteeringSensitivityOptions}" 
                         SelectedIndex="{Binding SelectedSteeringSensitivityOption}" 
@@ -62,8 +62,8 @@
             
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="Acceleration Response" />
-                    <TextBlock Text="Adjust how quickly ETS2LA will respond to desired changes in acceleration. Emergency braking is not affected." FontSize="12" Classes="Description" />
+                    <TextBlock Text="加速响应" />
+                    <TextBlock Text="调整 ETS2LA 对所需加速度变化的响应速度。紧急制动不受影响。" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding AccelerationOptions}" 
                         SelectedIndex="{Binding SelectedAccelerationOption}"
@@ -80,8 +80,8 @@
 
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="Following Distance" />
-                    <TextBlock Text="Adjust the distance ETS2LA will try to maintain from the vehicle in front of you when using adaptive cruise control." FontSize="12" Classes="Description" />
+                    <TextBlock Text="跟车距离" />
+                    <TextBlock Text="调整使用自适应巡航控制时，ETS2LA 将尝试与前车保持的距离。" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding FollowingDistanceOptions}" 
                         SelectedIndex="{Binding SelectedFollowingDistanceOption}" 
@@ -100,8 +100,8 @@
 
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="Speed Limit Warning" />
-                    <TextBlock Text="How should ETS2LA warn you about speed limits?" FontSize="12" Classes="Description" />
+                    <TextBlock Text="限速警告" />
+                    <TextBlock Text="ETS2LA 应如何警告您有关限速的信息？" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding SpeedLimitWarningOptions}" 
                         SelectedIndex="{Binding SelectedSpeedLimitWarningOption}"
@@ -118,8 +118,8 @@
 
             <StackPanel Spacing="10">
                 <StackPanel Spacing="3">
-                    <TextBlock Text="Collision Avoidance" />
-                    <TextBlock Text="At what time should ETS2LA intervene to avoid a collision?" FontSize="12" Classes="Description" />
+                    <TextBlock Text="碰撞避免" />
+                    <TextBlock Text="ETS2LA 应在何时介入以避免碰撞？" FontSize="12" Classes="Description" />
                 </StackPanel>
                 <TabStrip ItemsSource="{Binding CollisionAvoidanceOptions}" 
                         SelectedIndex="{Binding SelectedCollisionAvoidanceOption}" 

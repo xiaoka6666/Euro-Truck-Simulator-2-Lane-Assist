@@ -114,7 +114,7 @@ public class ControlItem : INotifyPropertyChanged
     private readonly ControlInstance _instance;
 
     public string DeviceName => GetDeviceName();
-    public string DeviceButton => _instance.ControlId.ToString() ?? "Unbound";
+    public string DeviceButton => _instance.ControlId.ToString() ?? "未绑定";
     public string DeviceButtonType => GetControlType();
     
     private bool _isActive = false;
@@ -158,8 +158,8 @@ public class ControlItem : INotifyPropertyChanged
         NotificationHandler.Current.SendNotification(new Notification
         {
             Id = "ControlSettings.Binding",
-            Title = "Control Binding",
-            Content = $"Press a key, button or move an axis to bind '{Name}'",
+            Title = "控制绑定",
+            Content = $"按下按键、按钮或移动轴以绑定 '{Name}'",
             IsProgressIndeterminate = true,
             CloseAfter = 0.0f
         });
@@ -178,8 +178,8 @@ public class ControlItem : INotifyPropertyChanged
             NotificationHandler.Current.SendNotification(new Notification
             {
                 Id = "ControlSettings.SuccessfullyBound",
-                Title = "Control Bound",
-                Content = $"Successfully bound '{Name}' to {DeviceName} - {DeviceButton}",
+                Title = "控制已绑定",
+                Content = $"成功将 '{Name}' 绑定到 {DeviceName} - {DeviceButton}",
                 Level = GrowlLevel.Success,
                 CloseAfter = 5.0f
             });
@@ -189,8 +189,8 @@ public class ControlItem : INotifyPropertyChanged
             NotificationHandler.Current.SendNotification(new Notification
             {
                 Id = "ControlSettings.BindingFailed",
-                Title = "Binding Cancelled",
-                Content = $"Binding for '{Name}' was cancelled or timed out.",
+                Title = "绑定已取消",
+                Content = $"'{Name}' 的绑定已取消或超时。",
                 Level = GrowlLevel.Warning,
                 CloseAfter = 5.0f
             });
@@ -220,18 +220,18 @@ public class ControlItem : INotifyPropertyChanged
     {
         if (string.IsNullOrEmpty(_instance.DeviceId))
         {
-            return "Unbound";
+            return "未绑定";
         }
 
         if (_instance.DeviceId.ToLower().StartsWith("keyboard"))
         {
-            return "Keyboard";
+            return "键盘";
         }
 
         var joystick = _cHandler.GetJoystickById(_instance.DeviceId);
-        string name = joystick != null 
-                      ? joystick.Information.ProductName 
-                      : "Not Connected";
+        string name = joystick != null
+                      ? joystick.Information.ProductName
+                      : "未连接";
 
         if (name.StartsWith("Controller ("))
         {
@@ -251,16 +251,25 @@ public class ControlItem : INotifyPropertyChanged
     private string GetControlType()
     {
         if (!_instance.IsBound())
-            return "Unbound";
-        
+            return "未绑定";
+
         bool isKeyboard = _instance.DeviceId.ToString().ToLower().StartsWith("keyboard");
         bool isButton = _instance.ControlId.ToString()?.StartsWith("B") ?? false;
 
         if (isKeyboard)
-            return "Key";
+            return "按键";
         if (isButton)
-            return "Button";
+            return "按钮";
 
-        return _instance.AxisBehavior.ToString() + " Axis";
+        string axisType = _instance.AxisBehavior.ToString() switch
+        {
+            "Normal" => "普通",
+            "Centered" => "居中",
+            "Inverted" => "反转",
+            "SplitNeg" => "分割负值",
+            "SplitPos" => "分割正值",
+            _ => _instance.AxisBehavior.ToString()
+        };
+        return axisType + "轴";
     }
 }
